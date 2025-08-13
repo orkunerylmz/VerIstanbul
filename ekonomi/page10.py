@@ -1,32 +1,3 @@
-# import streamlit as st
-# import pandas as pd
-# st.subheader("Veri Seti")
-# df = pd.read_excel("VerIstanbul.xlsx", sheet_name = "Sheet 1", header = 1)
-# st.write(df)
-
-
-
-# st.subheader("Veri Filtreleme")
-
-# fixed_column = "İlçeler"
-# cols = df.columns.tolist()
-
-# # selected_col = st.selectbox("Sütun Seçiniz: ", cols)
-
-# # st.write(df[selected_col])
-
-
-
-
-# other_cols = [col for col in cols if col != fixed_column]
-
-# selected_col = st.multiselect("Sütun seçin", other_cols)
-
-# if selected_col:
-#     combined_df = pd.concat([df[[fixed_column]], df[selected_col]], axis=1)
-#     st.write(combined_df)
-# else:
-#     st.info("Lütfen en az bir sütun seçin.")
 
 
 
