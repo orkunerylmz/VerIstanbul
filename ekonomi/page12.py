@@ -77,11 +77,11 @@ else:
                 "axisLine": {"show": False},
             },
             "grid": {
-                "left": "0%",    # Sol boşluk
-                "right": "7%",   # Sağ boşluk
-                "top": "2%",     # Üst boşluk
-                "bottom": "1%",  # Alt boşluk
-                "containLabel": True  # Eksen etiketlerinin dışarı taşmamasını sağlar
+                "left": "0%",    
+                "right": "7%",   
+                "top": "2%",     
+                "bottom": "1%",  
+                "containLabel": True  
             },
 
 
@@ -97,7 +97,7 @@ else:
                 {
                     "name": "Toplam",
                     "type": "pictorialBar",
-                    "data": df_sorted["Toplam Sayı"].tolist(),  # genel toplamlar burada
+                    "data": df_sorted["Toplam Sayı"].tolist(),  
                     "label": {"show": True, "position": "right", "offset":[10, 0], "color": "white", "fontWeight": "extrabold"},
                     
                     "symbolRepeat": True,
@@ -128,11 +128,9 @@ else:
 
 
 
-        # Her kategorinin toplamını hesapla ve sırala
         cat_totals = df_filtered[categories].sum().sort_values(ascending=False)
         sorted_categories = cat_totals.index.tolist()
 
-        # Renk paleti (en yüksek toplamdan başlayacak şekilde)
         color_palette = [
             "rgb(97,88,154)",
             "rgb(127,110,181)",
@@ -144,7 +142,6 @@ else:
             "rgb(158,151,194)"
         ]
 
-        # ECharts için veri hazırlama
         series_data = []
         for i, cat in enumerate(sorted_categories):
             series_data.append({
@@ -221,9 +218,9 @@ else:
                 "stack": "total",
                 "areaStyle": {"color": colors[idx]},
                 "lineStyle": {"color": colors[idx], "width": 2},
-                "symbol": "circle",            # Noktaları geri ekledik
-                "symbolSize": 6,               # Nokta boyutu
-                "itemStyle": {"color": colors[idx]},  # Noktaları çizgi rengiyle eşle
+                "symbol": "circle",       
+                "symbolSize": 6,          
+                "itemStyle": {"color": colors[idx]}, 
                 "emphasis": {"focus": "series"},
                 "data": counts
             })
@@ -234,15 +231,15 @@ else:
                 "data": vehicles,
                 "bottom": "5%",
                 "left": "center",
-                "textStyle": {"color": "white", "fontWeight": "bold"}  # Yazılar beyaz
+                "textStyle": {"color": "white", "fontWeight": "bold"} 
             },
 
             "grid": {
-                "left": "0%",    # Sol boşluk
-                "right": "0%",   # Sağ boşluk
-                "top": "10%",     # Üst boşluk
-                "bottom": "15%",  # Alt boşluk
-                "containLabel": True  # Eksen etiketlerinin dışarı taşmamasını sağlar
+                "left": "0%",    
+                "right": "0%",   
+                "top": "10%",    
+                "bottom": "15%",  
+                "containLabel": True 
             },
 
             "xAxis": {
@@ -297,7 +294,7 @@ else:
                 "bottom": 0,
                 "itemGap": 10,
                 "textStyle": {
-                    "color": "white",   # Legend yazıları beyaz
+                    "color": "white", 
                     "fontWeight": "bold"
                 }
             },
@@ -319,25 +316,23 @@ else:
                     "radius": "85%",
                     "data": [{"value": v, "name": n} for n, v in zip(df_sorted["Araç Türü"], df_sorted["Toplam Sayı"])],
                     
-                    # Label ve çizgileri kapat
                     "label": {
                         "show": True,  
-                        "position": "inside",        # Labeli aç
-                        "formatter": "{d}%",   # Yüzdelik göster
-                        "color": "white",      # Yazı rengi
-                        "fontWeight": "bold"   # Kalın
+                        "position": "inside",      
+                        "formatter": "{d}%",   
+                        "color": "white",      
+                        "fontWeight": "bold"   
                     },
                     "labelLine": {"show": False},
                     
-                    # Hover sırasında da label çıkmasın
                     "emphasis": {
                         "itemStyle": {
                             "shadowBlur": 10,
                             "shadowOffsetX": 0,
                             "shadowColor": "rgba(0, 0, 0, 0.5)"
                         },
-                        "label": {"show": False},         # Hover yazısını kapat
-                        "labelLine": {"show": False}      # Hover çizgisini kapat
+                        "label": {"show": False},         
+                        "labelLine": {"show": False}      
                     },
                     
                     "animationDuration": 1500,
@@ -360,31 +355,99 @@ else:
             with tab2:
                 st.dataframe(df_toplam)
 
-        fig_sun = px.sunburst(df_filtered_long, path=[px.Constant("Araçlar"), "Araç Türü"], values="Sayı", color="Sayı", color_continuous_scale="purp", height = 700)
 
-        fig_sun.update_traces(textinfo="label+value")
-        fig_sun.update_layout(coloraxis_colorbar=dict(orientation="v", thickness=20, len=0.8, y=0.5, x=1.02, xanchor="left", yanchor="middle"), coloraxis_showscale=False)
+
+        df_filtered_long["Sayı"] = df_filtered_long["Sayı"].astype(int)
+
+        data = []
+        for year in sorted(df_filtered_long["Yıl"].unique()):
+            year_dict = {
+                "name": str(year),
+                "value": 0,
+                "children": []
+            }
+            df_year = df_filtered_long[df_filtered_long["Yıl"] == year]
+            for category in df_year["Araç Türü"].unique():
+                val = int(df_year[df_year["Araç Türü"] == category]["Sayı"].sum())
+                year_dict["children"].append({"name": category, "value": val})
+                year_dict["value"] += val
+            data.append(year_dict)
+
+        max_value = max(int(row["Sayı"]) for _, row in df_filtered_long.iterrows())
+
+        option = {
+            "tooltip": {"formatter": "{b}<br/>Araç Sayısı: {c}", "textStyle": {"fontWeight": "bold", "fontSize": 14}},
+            "visualMap": {
+                "min": 0,
+                "max": max_value,
+                "inRange": {"color": ["rgb(240,225,245)","rgb(203,176,228)","rgb(180,153,216)","rgb(154,131,201)","rgb(127,110,181)","rgb(97,88,154)"]},
+                "show": True, "orient": "horizontal", "left": "center", "bottom": "0%",
+                "textStyle": {"color": "white", "fontWeight": "bold", "fontSize": 12}
+            },
+            "series": {
+                "type": "sunburst",
+                "data": data,
+                "radius": ["10%", "85%"],
+                "sort": None,
+                "emphasis": {"focus": "ancestor"},
+                "levels": [
+                    {"label": {"show": True, "fontWeight": "bold", "color": "white", "position": "outside", "formatter": "{b}"}},  # Yıl
+                    {"label": {"show": True, "position": "inside", "fontWeight": "bold", "color": "white", "formatter": "{b}"}},   # Kategori
+                    {"label": {"show": False}},
+                ],
+            }
+        }
+
+
 
         with col2:
             tab1, tab2 = st.tabs(["📊 Grafik", "📄 Veri"])
             with tab1:
-                st.plotly_chart(fig_sun, use_container_width=True)
+                st_echarts(option, height="700px")
 
             with tab2:
                 st.dataframe(df_filtered_long)
 
+
         st.markdown("""
                     ### 🗂️ Ağaç Haritası – Araç Kategorileri ve Yıllık Dağılım
-                    ℹ️ Bu grafik, her araç kategorisinin seçilen yıllardaki büyüklüğünü ve toplam araç sayısındaki payını hiyerarşik bir yapıda sunar. 
-                    Alanların büyüklüğü araç sayısını, renk tonları ise aynı değeri yoğunluk farkıyla gösterir. 
-                    Böylece hem kategori bazında hem de değer büyüklüğü açısından görsel bir karşılaştırma yapılabilir.
+
+                    ℹ️ Bu grafik, İstanbul’daki araç sayılarının yıllara ve araç türlerine göre dağılımını hiyerarşik bir şekilde görselleştirmektedir. 
+                    Grafiğin en üst seviyesinde tüm araçları temsil eden “Araçlar” düğümü yer almakta, 
+                    buradan alt seviyelere inildikçe yıllar ve her yıl içindeki araç türleri görülmektedir. 
+                    Her bir alanın büyüklüğü, o kategori veya yıl içindeki araç sayısını ifade ederken, renk tonları araç yoğunluğunu yansıtmaktadır. 
+                    Fare ile üzerine gelindiğinde, ilgili yıl ve araç türüne ait araç sayısı gösterilmektedir. 
+                    Bu görselleştirme sayesinde kullanıcılar, hangi yıllarda araç sayısının arttığını veya azaldığını, 
+                    hangi araç türlerinin baskın olduğunu ve yıllar bazında dağılımın nasıl değiştiğini kolayca analiz edebilir. 
+                    Treemap, hem yıllar hem de araç türleri arasındaki hiyerarşik ilişkileri net bir şekilde görselleştirerek, 
+                    detaylı karşılaştırmalar ve veri temelli çıkarımlar yapmayı mümkün kılar.
         """)
+
 
         df_tree = df_filtered_long[df_filtered_long["Yıl"].isin(selected_years)]
 
-        fig_tree = px.treemap(df_tree, path=[px.Constant("Araçlar"), "Araç Türü"], values="Sayı", color="Sayı", color_continuous_scale="purp", height=700)  
-        fig_tree.update_traces(textinfo="label+value")  
-        fig_tree.update_layout(coloraxis_colorbar=dict(orientation="h", thickness=20, len=1.2, y=-0.03, x=0.5, xanchor="center", yanchor="top"), coloraxis_colorbar_title_text="")  
+
+        df_filtered_long["Sayı"] = df_filtered_long["Sayı"].astype(int)
+
+        fig_tree = px.treemap(
+            df_filtered_long,
+            path=[px.Constant("Araçlar"), "Yıl", "Araç Türü"],  # Drill-down hiyerarşi
+            values="Sayı",
+            color="Sayı",
+            color_continuous_scale="Purp",
+            height=700
+        )
+
+        fig_tree.update_traces(
+            textinfo="label+value",
+            hovertemplate="<b>%{label}</b><br>Araç Sayısı: %{value}<extra></extra>"
+        )
+        fig_tree.update_layout(
+            coloraxis_showscale=False
+        )
+
+
+
 
         tab1, tab2 = st.tabs(["📊 Grafik", "📄 Veri"])
 
@@ -486,12 +549,12 @@ else:
                     (df_filtered_long["Yıl"] == year) & (df_filtered_long["Araç Türü"] == category),
                     "Sayı"
                 ].sum()
-                val = int(val)  # <- burası kesin Python int
+                val = int(val) 
                 data.append([j, i, val])
 
         option = {
             "tooltip": {"position": "top"},
-            "grid": {"height": "70%", "top": "7%"},
+            "grid": {"height": "70%", "top": "7%", "left": "5%", "right": "0%"},
             "xAxis": {"type": "category", "data": [str(y) for y in years], "splitArea": {"show": True}, "axisLabel": {"color": "white", "fontWeight": "bold"}},
             "yAxis": {"type": "category", "data": categories, "splitArea": {"show": True}, "axisLabel": {"color": "white", "fontWeight": "bold"}},
             "visualMap": {
@@ -511,7 +574,7 @@ else:
                     ]
 
                 },
-                "textStyle": {"color": "white", "fontWeight": "bold"},  # sayı rengini beyaz yap
+                "textStyle": {"color": "white", "fontWeight": "bold"},  
 
             },
 
@@ -548,6 +611,26 @@ else:
         with tab1:
 
             st_echarts(option, height="700px")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
