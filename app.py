@@ -1,6 +1,11 @@
 import streamlit as st
 
 
+st.set_page_config(
+    page_title="VerIstanbul",
+    layout="wide",       
+    initial_sidebar_state="expanded"
+)
 
 page1 = st.Page("VerIstanbul/anasayfa.py", title = "Ana Sayfa", icon = ":material/home:", default=True)
 page2 = st.Page("VerIstanbul/iletisim.py", title = "İletişim", icon = ":material/mail:")

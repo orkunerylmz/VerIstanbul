@@ -4,33 +4,32 @@ import plotly.express as px
 import streamlit as st
 
 
-df = pd.read_excel("VerIstanbul.xlsx", sheet_name = "Sheet 18", header = 1)
-st.write(df)
-
-
-sutunlar = list(df.columns)
-sutunlar.remove("Yıl")
-
-df["Yıl"] = df["Yıl"].astype(str)
-
-# fig = px.bar(df, x="Yıl", y=sutunlar, barmode="group")
-# st.plotly_chart(fig)
+df1 = pd.read_excel("VerIstanbul.xlsx", sheet_name = "Sheet 18", header = 1)
+df2 = pd.read_excel("VerIstanbul.xlsx", sheet_name = "Sheet 20", header = 1)
+st.write(df1)
+st.write(df2)
 
 
 
-# fig = px.line(df, x = "Yıl", y = sutunlar)
-# st.plotly_chart(fig)
+# Uzun başlıkları satır kırma ile kısaltma
+df2["Kategoriler"] = df2["Kategoriler"].apply(lambda x: "<br>".join(x.split(" ")))
 
+fig = px.bar(
+    df2,
+    x="Kategoriler",
+    y="Girişim Sayıları",
+    height=800,
+    color_discrete_sequence=px.colors.sequential.Purp_r
+)
 
-col1, col2 = st.columns(2)
+# Başlıkları düz (yatay) yap
+fig.update_xaxes(tickangle=0, tickfont=dict(size=8))
+fig.update_yaxes(title_text="Girişim Sayısı")
 
-with col1:
-    fig_bar = px.bar(df, x="Yıl", y=sutunlar, barmode="group", width = 700)
-    
-    st.plotly_chart(fig_bar, use_container_width=True)
+fig.update_layout(
+    xaxis_title="",
+    bargap=0.3
+)
 
-with col2:
-    fig_line = px.line(df, x="Yıl", y=sutunlar)
-    st.plotly_chart(fig_line, use_container_width=True)
-
+st.plotly_chart(fig, use_container_width=True)
 

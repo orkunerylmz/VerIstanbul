@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-for x in range(1,20):
+for x in range(1,21):
     df = pd.read_excel("VerIstanbul.xlsx", sheet_name=f"Sheet {x}", header=1)
     print("------------------------------------------------------------------------------------------------------------------")
     print(f"Sheet {x}")
